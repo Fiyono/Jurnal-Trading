@@ -1027,7 +1027,7 @@ function formatSession($value) {
     } elseif ($value == 'skip') {
         return 'SKIP';
     }
-    return strtoupper($value);
+    return strtoupper($value ?? '');
 }
 
 $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 10;
@@ -1045,10 +1045,10 @@ $where_conditions = [];
 
 if (!empty($search)) {
     $search_escaped = mysqli_real_escape_string($koneksi, $search);
-    $hari_indo = ['senin', 'selasa', 'rabu', 'kamis', 'jumat'];
+    $hari_indo_search = ['senin', 'selasa', 'rabu', 'kamis', 'jumat'];
     $search_lower = strtolower($search);
     
-    if (in_array($search_lower, $hari_indo)) {
+    if (in_array($search_lower, $hari_indo_search)) {
         $day_map = ['senin'=>'Monday','selasa'=>'Tuesday','rabu'=>'Wednesday','kamis'=>'Thursday','jumat'=>'Friday'];
         $where_conditions[] = "DAYNAME(tanggal) = '{$day_map[$search_lower]}'";
     } elseif (preg_match('/^\d{4}-\d{2}-\d{2}$/', $search)) {
@@ -1150,7 +1150,7 @@ if (!empty($success_msg) || !empty($error_msg)) {
         <th>SESI 3</th>
         <th>SESI 4</th>
         <th>SESI 5</th>
-        <th>CATATAN</th>
+        <th>SESI 6</th>
         <th>AKSI</th>
       </tr>
     </thead>
@@ -1161,19 +1161,20 @@ if (!empty($success_msg) || !empty($error_msg)) {
           $tanggal_indonesia = $hari_indo[date('l', $timestamp)] . ', ' . date('d-m-Y', $timestamp);
           $photos = !empty($d['foto']) ? array_filter(array_map('trim', explode(',', $d['foto']))) : [];
           $photo_count = count($photos);
-          $note = !empty($d['note']) ? htmlspecialchars($d['note']) : '';
           
           $s1 = formatSession($d['session1'] ?? 'skip');
           $s2 = formatSession($d['session2'] ?? 'skip');
           $s3 = formatSession($d['session3'] ?? 'skip');
           $s4 = formatSession($d['session4'] ?? 'skip');
           $s5 = formatSession($d['session5'] ?? 'skip');
+          $s6 = formatSession($d['session6'] ?? 'skip');
           
           $badgeClass1 = $d['session1'] == 'profit' ? 'badge-profit' : ($d['session1'] == 'lose' ? 'badge-lose' : 'badge-neutral');
           $badgeClass2 = $d['session2'] == 'profit' ? 'badge-profit' : ($d['session2'] == 'lose' ? 'badge-lose' : 'badge-neutral');
           $badgeClass3 = $d['session3'] == 'profit' ? 'badge-profit' : ($d['session3'] == 'lose' ? 'badge-lose' : 'badge-neutral');
           $badgeClass4 = $d['session4'] == 'profit' ? 'badge-profit' : ($d['session4'] == 'lose' ? 'badge-lose' : 'badge-neutral');
           $badgeClass5 = $d['session5'] == 'profit' ? 'badge-profit' : ($d['session5'] == 'lose' ? 'badge-lose' : 'badge-neutral');
+          $badgeClass6 = $d['session6'] == 'profit' ? 'badge-profit' : ($d['session6'] == 'lose' ? 'badge-lose' : 'badge-neutral');
       ?>
         <tr>
           <td>
@@ -1207,12 +1208,8 @@ if (!empty($success_msg) || !empty($error_msg)) {
           <td style="text-align: center;">
             <span class="session-badge <?= $badgeClass5 ?>"><?= $s5 ?></span>
           </td>
-          <td class="note-cell">
-            <?php if (!empty($note)): ?>
-              <span class="note-text"><?= nl2br($note) ?></span>
-            <?php else: ?>
-              <span class="note-empty"><i class="fas fa-pen"></i> TIDAK ADA CATATAN</span>
-            <?php endif; ?>
+          <td style="text-align: center;">
+            <span class="session-badge <?= $badgeClass6 ?>"><?= $s6 ?></span>
           </td>
           <td style="text-align: center;">
             <div class="action-buttons">
@@ -1252,12 +1249,14 @@ if (!empty($success_msg) || !empty($error_msg)) {
       $s3 = formatSession($d['session3'] ?? 'skip');
       $s4 = formatSession($d['session4'] ?? 'skip');
       $s5 = formatSession($d['session5'] ?? 'skip');
+      $s6 = formatSession($d['session6'] ?? 'skip');
       
       $badgeClass1 = $d['session1'] == 'profit' ? 'badge-profit' : ($d['session1'] == 'lose' ? 'badge-lose' : 'badge-neutral');
       $badgeClass2 = $d['session2'] == 'profit' ? 'badge-profit' : ($d['session2'] == 'lose' ? 'badge-lose' : 'badge-neutral');
       $badgeClass3 = $d['session3'] == 'profit' ? 'badge-profit' : ($d['session3'] == 'lose' ? 'badge-lose' : 'badge-neutral');
       $badgeClass4 = $d['session4'] == 'profit' ? 'badge-profit' : ($d['session4'] == 'lose' ? 'badge-lose' : 'badge-neutral');
       $badgeClass5 = $d['session5'] == 'profit' ? 'badge-profit' : ($d['session5'] == 'lose' ? 'badge-lose' : 'badge-neutral');
+      $badgeClass6 = $d['session6'] == 'profit' ? 'badge-profit' : ($d['session6'] == 'lose' ? 'badge-lose' : 'badge-neutral');
   ?>
   <div class="trading-card">
     <div class="card-header">
@@ -1303,18 +1302,13 @@ if (!empty($success_msg) || !empty($error_msg)) {
           <span class="session-badge <?= $badgeClass5 ?>" style="padding:4px 12px; font-size:0.8rem;"><?= $s5 ?></span>
         </div>
       </div>
-    </div>
-    
-    <?php if (!empty($note)): ?>
-    <div class="card-note">
-      <div class="card-note-label">
-        <i class="fas fa-pen"></i> CATATAN
-      </div>
-      <div class="card-note-text">
-        <?= nl2br($note) ?>
+      <div class="card-session">
+        <div class="card-session-label">SESI 6</div>
+        <div class="card-session-value">
+          <span class="session-badge <?= $badgeClass6 ?>" style="padding:4px 12px; font-size:0.8rem;"><?= $s6 ?></span>
+        </div>
       </div>
     </div>
-    <?php endif; ?>
     
     <div class="card-footer">
       <a href="edit.php?id=<?= $d['id'] ?>" class="btn-edit-mobile"><i class="fas fa-edit"></i> EDIT</a>

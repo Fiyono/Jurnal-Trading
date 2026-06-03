@@ -556,7 +556,7 @@ $existing_photos = !empty($data['foto']) ? array_filter(array_map('trim', explod
       </div>
 
       <div class="form-group">
-        <label><i class="fas fa-chart-line"></i> SESSION 1 (0–50%) - PAGI</label>
+        <label><i class="fas fa-chart-line"></i> SESSION 1 (0–50%) </label>
         <select name="session1" required>
           <option value="profit" <?= $data['session1'] == 'profit' ? 'selected' : '' ?>>📈 PROFIT</option>
           <option value="lose" <?= $data['session1'] == 'lose' ? 'selected' : '' ?>>📉 LOSS</option>
@@ -565,7 +565,7 @@ $existing_photos = !empty($data['foto']) ? array_filter(array_map('trim', explod
       </div>
 
       <div class="form-group">
-        <label><i class="fas fa-chart-line"></i> SESSION 2 (0-100%) - SIANG</label>
+        <label><i class="fas fa-chart-line"></i> SESSION 2 (0-100%) </label>
         <select name="session2" required>
           <option value="profit" <?= $data['session2'] == 'profit' ? 'selected' : '' ?>>📈 PROFIT</option>
           <option value="lose" <?= $data['session2'] == 'lose' ? 'selected' : '' ?>>📉 LOSS</option>
@@ -574,7 +574,7 @@ $existing_photos = !empty($data['foto']) ? array_filter(array_map('trim', explod
       </div>
 
       <div class="form-group">
-        <label><i class="fas fa-chart-line"></i> SESSION 3 (50-0%) - SORE</label>
+        <label><i class="fas fa-chart-line"></i> SESSION 3 (50-0%) </label>
         <select name="session3" required>
           <option value="profit" <?= $data['session3'] == 'profit' ? 'selected' : '' ?>>📈 PROFIT</option>
           <option value="lose" <?= $data['session3'] == 'lose' ? 'selected' : '' ?>>📉 LOSS</option>
@@ -583,7 +583,7 @@ $existing_photos = !empty($data['foto']) ? array_filter(array_map('trim', explod
       </div>
 
       <div class="form-group">
-        <label><i class="fas fa-chart-line"></i> SESSION 4 (100-50%) - MALAM</label>
+        <label><i class="fas fa-chart-line"></i> SESSION 4 (100-50%) </label>
         <select name="session4" required>
           <option value="profit" <?= $data['session4'] == 'profit' ? 'selected' : '' ?>>📈 PROFIT</option>
           <option value="lose" <?= $data['session4'] == 'lose' ? 'selected' : '' ?>>📉 LOSS</option>
@@ -593,11 +593,21 @@ $existing_photos = !empty($data['foto']) ? array_filter(array_map('trim', explod
 
       <!-- SESSION 5 -->
       <div class="form-group">
-        <label><i class="fas fa-chart-line"></i> SESSION 5 (50-0%) - LARUT MALAM</label>
+        <label><i class="fas fa-chart-line"></i> SESSION 5 (100-50%) </label>
         <select name="session5" required>
           <option value="profit" <?= ($data['session5'] ?? 'skip') == 'profit' ? 'selected' : '' ?>>📈 PROFIT</option>
           <option value="lose" <?= ($data['session5'] ?? 'skip') == 'lose' ? 'selected' : '' ?>>📉 LOSS</option>
           <option value="skip" <?= ($data['session5'] ?? 'skip') == 'skip' ? 'selected' : '' ?>>⏸️ SKIP</option>
+        </select>
+      </div>
+
+      <!-- SESSION 6 -->
+      <div class="form-group">
+        <label><i class="fas fa-chart-line"></i> SESSION 6 ( REVERSAL ) </label>
+        <select name="session6" required>
+          <option value="profit" <?= ($data['session6'] ?? 'skip') == 'profit' ? 'selected' : '' ?>>📈 PROFIT</option>
+          <option value="lose" <?= ($data['session6'] ?? 'skip') == 'lose' ? 'selected' : '' ?>>📉 LOSS</option>
+          <option value="skip" <?= ($data['session6'] ?? 'skip') == 'skip' ? 'selected' : '' ?>>⏸️ SKIP</option>
         </select>
       </div>
 
@@ -683,16 +693,20 @@ function showSessionInfo() {
                     <p style="margin: 5px 0 0 0; font-size: 0.9rem;">Sesi utama, likuiditas tinggi. Momentum mulai terbentuk.</p>
                 </div>
                 <div style="margin-bottom: 15px; padding: 10px; background: rgba(99,102,241,0.1); border-radius: 12px;">
-                    <strong style="color: #f59e0b;">🟡 SESSION 3 (50-0%) - SORE</strong>
+                    <strong style="color: #f59e0b;">🟡 SESSION 3 (50-0%) </strong>
                     <p style="margin: 5px 0 0 0; font-size: 0.9rem;">Potensi reversal, banyak trader mulai take profit.</p>
                 </div>
                 <div style="margin-bottom: 15px; padding: 10px; background: rgba(99,102,241,0.1); border-radius: 12px;">
-                    <strong style="color: #ef4444;">🔴 SESSION 4 (100-50%) - MALAM</strong>
+                    <strong style="color: #ef4444;">🔴 SESSION 4 (100-50%) </strong>
                     <p style="margin: 5px 0 0 0; font-size: 0.9rem;">Sesi Asia, cenderung ranging. Hati-hati dengan breakout palsu.</p>
                 </div>
                 <div style="margin-bottom: 5px; padding: 10px; background: rgba(99,102,241,0.1); border-radius: 12px;">
-                    <strong style="color: #8b5cf6;">🟣 SESSION 5 (50-0%) - LARUT MALAM</strong>
+                    <strong style="color: #8b5cf6;">🟣 SESSION 5 (50-0%) </strong>
                     <p style="margin: 5px 0 0 0; font-size: 0.9rem;">Sesi akhir, volume tipis. Risiko spread melebar.</p>
+                </div>
+                <div style="margin-bottom: 5px; padding: 10px; background: rgba(99,102,241,0.1); border-radius: 12px;">
+                    <strong style="color:rgb(0, 120, 215);">🔵 SESSION 6 (REVERSAL) </strong>
+                    <p style="margin: 5px 0 0 0; font-size: 0.9rem;">Reversal dari sesi 1 khusus hari jumat.</p>
                 </div>
             </div>
         `,

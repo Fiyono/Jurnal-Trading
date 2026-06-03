@@ -17,6 +17,7 @@ $session2 = isset($_POST['session2']) ? mysqli_real_escape_string($koneksi, $_PO
 $session3 = isset($_POST['session3']) ? mysqli_real_escape_string($koneksi, $_POST['session3']) : 'skip';
 $session4 = isset($_POST['session4']) ? mysqli_real_escape_string($koneksi, $_POST['session4']) : 'skip';
 $session5 = isset($_POST['session5']) ? mysqli_real_escape_string($koneksi, $_POST['session5']) : 'skip';
+$session6 = isset($_POST['session6']) ? mysqli_real_escape_string($koneksi, $_POST['session6']) : 'skip';
 $note = isset($_POST['note']) ? mysqli_real_escape_string($koneksi, $_POST['note']) : '';
 
 // Existing photos yang tidak dihapus
@@ -108,6 +109,7 @@ $query = "UPDATE trades SET
           session3 = '$session3',
           session4 = '$session4',
           session5 = '$session5',
+          session6 = '$session6',
           foto = '$foto_paths',
           note = '$note'
           WHERE id = $id";

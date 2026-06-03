@@ -8,8 +8,10 @@ if(!isset($_SESSION['login'])){
 
 require_once 'koneksi.php';
 
-// UPDATE: Set semua session5 yang NULL atau kosong menjadi 'skip'
-mysqli_query($koneksi, "UPDATE trades SET session5 = 'skip' WHERE session5 IS NULL OR session5 = ''");
+// UPDATE: Set semua session yang NULL atau kosong menjadi 'skip'
+for ($i = 1; $i <= 6; $i++) {
+    mysqli_query($koneksi, "UPDATE trades SET session$i = 'skip' WHERE session$i IS NULL OR session$i = ''");
+}
 
 $data = mysqli_query($koneksi, "SELECT * FROM trades ORDER BY tanggal ASC");
 
@@ -19,55 +21,48 @@ $total_loss   = 0;
 $win  = 0;
 $loss = 0;
 
-// SESSION - UNTUK 5 SESSIONS
-$total = [1=>0,2=>0,3=>0,4=>0,5=>0]; // total profit+loss (skip tidak masuk)
-$wins  = [1=>0,2=>0,3=>0,4=>0,5=>0];
-$session_profit = [1=>0,2=>0,3=>0,4=>0,5=>0];
-$session_lose = [1=>0,2=>0,3=>0,4=>0,5=>0];
-$session_skip = [1=>0,2=>0,3=>0,4=>0,5=>0];
+// SESSION - UNTUK 6 SESSIONS
+$total = [1=>0,2=>0,3=>0,4=>0,5=>0,6=>0];
+$wins  = [1=>0,2=>0,3=>0,4=>0,5=>0,6=>0];
+$session_profit = [1=>0,2=>0,3=>0,4=>0,5=>0,6=>0];
+$session_lose = [1=>0,2=>0,3=>0,4=>0,5=>0,6=>0];
+$session_skip = [1=>0,2=>0,3=>0,4=>0,5=>0,6=>0];
 
 // Untuk total transaksi (profit+loss) per sesi
-$total_transactions = [1=>0,2=>0,3=>0,4=>0,5=>0];
+$total_transactions = [1=>0,2=>0,3=>0,4=>0,5=>0,6=>0];
 
-// NEW: Untuk menyimpan profit per sesi berdasarkan hari
+// Untuk menyimpan profit per sesi berdasarkan hari
 $session_by_day = [
     1 => ['Senin'=>0, 'Selasa'=>0, 'Rabu'=>0, 'Kamis'=>0, 'Jumat'=>0],
     2 => ['Senin'=>0, 'Selasa'=>0, 'Rabu'=>0, 'Kamis'=>0, 'Jumat'=>0],
     3 => ['Senin'=>0, 'Selasa'=>0, 'Rabu'=>0, 'Kamis'=>0, 'Jumat'=>0],
     4 => ['Senin'=>0, 'Selasa'=>0, 'Rabu'=>0, 'Kamis'=>0, 'Jumat'=>0],
-    5 => ['Senin'=>0, 'Selasa'=>0, 'Rabu'=>0, 'Kamis'=>0, 'Jumat'=>0]
+    5 => ['Senin'=>0, 'Selasa'=>0, 'Rabu'=>0, 'Kamis'=>0, 'Jumat'=>0],
+    6 => ['Senin'=>0, 'Selasa'=>0, 'Rabu'=>0, 'Kamis'=>0, 'Jumat'=>0]
 ];
 
-// HARIAN (INIT BIAR URUT) - DENGAN SESI 5
-$hari_stats = [
-    'Senin' => ['profit'=>0, 'lose'=>0, 'total_profit'=>0, 
-                's1_p'=>0, 's1_l'=>0, 's2_p'=>0, 's2_l'=>0, 
-                's3_p'=>0, 's3_l'=>0, 's4_p'=>0, 's4_l'=>0,
-                's5_p'=>0, 's5_l'=>0],
-    'Selasa'=> ['profit'=>0, 'lose'=>0, 'total_profit'=>0, 
-                's1_p'=>0, 's1_l'=>0, 's2_p'=>0, 's2_l'=>0, 
-                's3_p'=>0, 's3_l'=>0, 's4_p'=>0, 's4_l'=>0,
-                's5_p'=>0, 's5_l'=>0],
-    'Rabu'  => ['profit'=>0, 'lose'=>0, 'total_profit'=>0, 
-                's1_p'=>0, 's1_l'=>0, 's2_p'=>0, 's2_l'=>0, 
-                's3_p'=>0, 's3_l'=>0, 's4_p'=>0, 's4_l'=>0,
-                's5_p'=>0, 's5_l'=>0],
-    'Kamis' => ['profit'=>0, 'lose'=>0, 'total_profit'=>0, 
-                's1_p'=>0, 's1_l'=>0, 's2_p'=>0, 's2_l'=>0, 
-                's3_p'=>0, 's3_l'=>0, 's4_p'=>0, 's4_l'=>0,
-                's5_p'=>0, 's5_l'=>0],
-    'Jumat' => ['profit'=>0, 'lose'=>0, 'total_profit'=>0, 
-                's1_p'=>0, 's1_l'=>0, 's2_p'=>0, 's2_l'=>0, 
-                's3_p'=>0, 's3_l'=>0, 's4_p'=>0, 's4_l'=>0,
-                's5_p'=>0, 's5_l'=>0],
-];
+// HARIAN (INIT BIAR URUT) - DENGAN SESI 6
+$hari_stats = [];
+$day_order = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'];
+foreach ($day_order as $day) {
+    $hari_stats[$day] = [
+        'profit' => 0,
+        'lose' => 0,
+        'total_profit' => 0
+    ];
+    // Inisialisasi untuk sesi 1-6
+    for ($i = 1; $i <= 6; $i++) {
+        $hari_stats[$day]["s{$i}_p"] = 0;
+        $hari_stats[$day]["s{$i}_l"] = 0;
+    }
+}
 
-// 🔥 NEW: Statistik untuk kombinasi sesi 1 dan 2 (3 cards saja)
+// 🔥 Statistik untuk kombinasi sesi 1 dan 2
 $session1_2_combinations = [
-    'profit_profit' => 0,   // Sesi 1 Profit & Sesi 2 Profit
-    'profit_loss' => 0,     // Sesi 1 Profit & Sesi 2 Loss
-    'loss_loss' => 0,       // Sesi 1 Loss & Sesi 2 Loss
-    'total_valid' => 0      // Total transaksi dengan kedua sesi valid (bukan skip)
+    'profit_profit' => 0,
+    'profit_loss' => 0,
+    'loss_loss' => 0,
+    'total_valid' => 0
 ];
 
 // 🔥 TRANSLATE HARI
@@ -90,9 +85,9 @@ while ($d = mysqli_fetch_assoc($data)) {
     $hari = isset($hari_indo[$hari_en]) ? $hari_indo[$hari_en] : $hari_en;
     
     // Hanya proses untuk hari Senin-Jumat
-    if (in_array($hari, ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'])) {
+    if (in_array($hari, $day_order)) {
         
-        // 🔥 NEW: Hitung kombinasi sesi 1 dan 2
+        // 🔥 Hitung kombinasi sesi 1 dan 2
         $s1 = $d["session1"];
         $s2 = $d["session2"];
         
@@ -109,10 +104,10 @@ while ($d = mysqli_fetch_assoc($data)) {
             }
         }
         
-        // LOOP UNTUK 5 SESSIONS
-        for ($i=1; $i<=5; $i++) {
-
-            $s = $d["session$i"];
+        // LOOP UNTUK 6 SESSIONS
+        for ($i=1; $i<=6; $i++) {
+            $col = "session$i";
+            $s = isset($d[$col]) ? $d[$col] : 'skip';
             
             // Jika NULL atau kosong, set sebagai skip
             if (empty($s)) {
@@ -123,10 +118,8 @@ while ($d = mysqli_fetch_assoc($data)) {
                 $day_profit += 1;
                 $win++;
                 $wins[$i]++;
-                $total_transactions[$i]++; // profit masuk hitungan
+                $total_transactions[$i]++;
                 $session_profit[$i]++;
-                
-                // NEW: Catat profit per sesi berdasarkan hari
                 $session_by_day[$i][$hari]++;
                 $hari_stats[$hari]['profit']++;
                 $hari_stats[$hari]['total_profit']++;
@@ -135,15 +128,13 @@ while ($d = mysqli_fetch_assoc($data)) {
             else if ($s == 'lose') {
                 $day_profit -= 1;
                 $loss++;
-                $total_transactions[$i]++; // loss masuk hitungan
+                $total_transactions[$i]++;
                 $session_lose[$i]++;
                 $hari_stats[$hari]['lose']++;
                 $hari_stats[$hari]["s{$i}_l"]++;
             }
             else if ($s == 'skip') {
-                // SKIP TIDAK DIHITUNG UNTUK WINRATE
                 $session_skip[$i]++;
-                // Tidak menambah $total_transactions dan tidak mempengaruhi winrate
             }
         }
         
@@ -159,12 +150,12 @@ $total_trade = $win + $loss;
 // WINRATE GLOBAL
 $winrate = $total_trade > 0 ? ($win / $total_trade) * 100 : 0;
 
-// FUNCTION untuk menghitung winrate berdasarkan profit dan loss saja
+// FUNCTION untuk menghitung winrate
 function wr($w, $t) {
     return $t > 0 ? round(($w/$t)*100,1) : 0;
 }
 
-// 🔥 NEW: Hitung persentase untuk kombinasi sesi 1 & 2 (3 cards)
+// 🔥 Hitung persentase untuk kombinasi sesi 1 & 2
 $profit_profit_percent = $session1_2_combinations['total_valid'] > 0 
     ? round(($session1_2_combinations['profit_profit'] / $session1_2_combinations['total_valid']) * 100, 1) 
     : 0;
@@ -177,11 +168,11 @@ $loss_loss_percent = $session1_2_combinations['total_valid'] > 0
     ? round(($session1_2_combinations['loss_loss'] / $session1_2_combinations['total_valid']) * 100, 1) 
     : 0;
 
-// 🔥 FITUR BARU: MENCARI HARI TERBAIK PER SESI
+// 🔥 MENCARI HARI TERBAIK PER SESI (1-6)
 $best_day_per_session = [];
 $best_day_value_per_session = [];
 
-for ($session = 1; $session <= 5; $session++) {
+for ($session = 1; $session <= 6; $session++) {
     $best_day = '-';
     $best_value = 0;
     
@@ -196,11 +187,11 @@ for ($session = 1; $session <= 5; $session++) {
     $best_day_value_per_session[$session] = $best_value;
 }
 
-// 🔥 MENCARI SESSION DENGAN PROFIT TERBANYAK
+// 🔥 MENCARI SESSION DENGAN PROFIT TERBANYAK (1-6)
 $best_session = 1;
 $max_session_profit = $session_profit[1];
 
-for ($i=2; $i<=5; $i++) {
+for ($i=2; $i<=6; $i++) {
     if ($session_profit[$i] > $max_session_profit) {
         $max_session_profit = $session_profit[$i];
         $best_session = $i;
@@ -218,7 +209,7 @@ foreach ($hari_stats as $hari => $val) {
     }
 }
 
-// 🔥 MENCARI HARI DENGAN WINRATE TERTINGGI (minimal 3 transaksi profit+loss)
+// 🔥 MENCARI HARI DENGAN WINRATE TERTINGGI (minimal 3 transaksi)
 $best_day_wr = '-';
 $best_wr_value = 0;
 
@@ -267,10 +258,7 @@ foreach ($hari_stats as $hari => $val) {
   
   <title>STATISTIK TRADING</title>
   
-  <!-- Font Awesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  
-  <!-- Google Fonts - Inter -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   
   <style>
@@ -604,7 +592,7 @@ foreach ($hari_stats as $hari => $val) {
     /* Session Day Cards */
     .session-day-grid {
       display: grid;
-      grid-template-columns: repeat(5, 1fr);
+      grid-template-columns: repeat(6, 1fr);
       gap: 12px;
       margin-bottom: 20px;
     }
@@ -815,7 +803,7 @@ foreach ($hari_stats as $hari => $val) {
 
     .session-grid {
       display: grid;
-      grid-template-columns: repeat(5, 1fr);
+      grid-template-columns: repeat(6, 1fr);
       gap: 12px;
       margin-bottom: 24px;
     }
@@ -896,7 +884,7 @@ foreach ($hari_stats as $hari => $val) {
     .desktop-table table {
       width: 100%;
       border-collapse: collapse;
-      min-width: 1100px;
+      min-width: 1400px;
     }
 
     .desktop-table th {
@@ -988,7 +976,7 @@ foreach ($hari_stats as $hari => $val) {
 
     .day-session-grid {
       display: grid;
-      grid-template-columns: repeat(5, 1fr);
+      grid-template-columns: repeat(3, 1fr);
       gap: 8px;
       margin: 12px 0;
     }
@@ -1329,7 +1317,7 @@ $day_icons = [
 ?>
 
 <div class="session-day-grid">
-  <?php for ($session = 1; $session <= 5; $session++): 
+  <?php for ($session = 1; $session <= 6; $session++): 
     $best_hari = $best_day_per_session[$session];
     $profit_count = $best_day_value_per_session[$session];
     $total_profit_session = $session_profit[$session];
@@ -1417,71 +1405,26 @@ $day_icons = [
 </div>
 
 <div class="session-grid">
-  <div class="session-item <?= $best_session == 1 ? 'best-session' : '' ?>">
-    <div class="session-number">SESI 1</div>
-    <div class="session-value"><?= wr($wins[1], $total_transactions[1]) ?>%</div>
+  <?php for ($i = 1; $i <= 6; $i++): ?>
+  <div class="session-item <?= $best_session == $i ? 'best-session' : '' ?>">
+    <div class="session-number">SESI <?= $i ?></div>
+    <div class="session-value"><?= wr($wins[$i], $total_transactions[$i]) ?>%</div>
     <div class="session-stats">
-      <span class="profit-count">📈 PROFIT : <?= $session_profit[1] ?? 0 ?></span>
-      <span class="lose-count">📉 LOSS : <?= $session_lose[1] ?? 0 ?></span>
+      <span class="profit-count">📈 PROFIT : <?= $session_profit[$i] ?? 0 ?></span>
+      <span class="lose-count">📉 LOSS : <?= $session_lose[$i] ?? 0 ?></span>
+      <span class="skip-count">⏭️ SKIP : <?= $session_skip[$i] ?? 0 ?></span>
     </div>
     <div class="progress-bar">
-      <div class="progress-fill" style="width: <?= wr($wins[1], $total_transactions[1]) ?>%"></div>
+      <div class="progress-fill" style="width: <?= wr($wins[$i], $total_transactions[$i]) ?>%"></div>
     </div>
   </div>
-  
-  <div class="session-item <?= $best_session == 2 ? 'best-session' : '' ?>">
-    <div class="session-number">SESI 2</div>
-    <div class="session-value"><?= wr($wins[2], $total_transactions[2]) ?>%</div>
-    <div class="session-stats">
-      <span class="profit-count">📈 PROFIT : <?= $session_profit[2] ?? 0 ?></span>
-      <span class="lose-count">📉 LOSS : <?= $session_lose[2] ?? 0 ?></span>
-    </div>
-    <div class="progress-bar">
-      <div class="progress-fill" style="width: <?= wr($wins[2], $total_transactions[2]) ?>%"></div>
-    </div>
-  </div>
-  
-  <div class="session-item <?= $best_session == 3 ? 'best-session' : '' ?>">
-    <div class="session-number">SESI 3</div>
-    <div class="session-value"><?= wr($wins[3], $total_transactions[3]) ?>%</div>
-    <div class="session-stats">
-      <span class="profit-count">📈 PROFIT : <?= $session_profit[3] ?? 0 ?></span>
-      <span class="lose-count">📉 LOSS : <?= $session_lose[3] ?? 0 ?></span>
-    </div>
-    <div class="progress-bar">
-      <div class="progress-fill" style="width: <?= wr($wins[3], $total_transactions[3]) ?>%"></div>
-    </div>
-  </div>
-  
-  <div class="session-item <?= $best_session == 4 ? 'best-session' : '' ?>">
-    <div class="session-number">SESI 4</div>
-    <div class="session-value"><?= wr($wins[4], $total_transactions[4]) ?>%</div>
-    <div class="session-stats">
-      <span class="profit-count">📈 PROFIT : <?= $session_profit[4] ?? 0 ?></span>
-      <span class="lose-count">📉 LOSS : <?= $session_lose[4] ?? 0 ?></span>
-    </div>
-    <div class="progress-bar">
-      <div class="progress-fill" style="width: <?= wr($wins[4], $total_transactions[4]) ?>%"></div>
-    </div>
-  </div>
-  
-  <div class="session-item <?= $best_session == 5 ? 'best-session' : '' ?>">
-    <div class="session-number">SESI 5</div>
-    <div class="session-value"><?= wr($wins[5], $total_transactions[5]) ?>%</div>
-    <div class="session-stats">
-      <span class="profit-count">📈 PROFIT : <?= $session_profit[5] ?? 0 ?></span>
-      <span class="lose-count">📉 LOSS : <?= $session_lose[5] ?? 0 ?></span>
-    </div>
-    <div class="progress-bar">
-      <div class="progress-fill" style="width: <?= wr($wins[5], $total_transactions[5]) ?>%"></div>
-    </div>
-  </div>
+  <?php endfor; ?>
 </div>
 
-<!-- Statistik per Hari dengan Sesi 1-5 -->
+<!-- Statistik per Hari dengan Sesi 1-6 -->
 <div class="section-title">
   <i class="fas fa-calendar-week"></i>
-  <h3>ANALISIS HARIAN LENGKAP (SESI 1-5)</h3>
+  <h3>ANALISIS HARIAN LENGKAP (SESI 1-6)</h3>
 </div>
 
 <!-- DESKTOP TABLE -->
@@ -1495,51 +1438,32 @@ $day_icons = [
         <th colspan="2">SESI 3</th>
         <th colspan="2">SESI 4</th>
         <th colspan="2">SESI 5</th>
+        <th colspan="2">SESI 6</th>
         <th rowspan="2">TOTAL<br>PROFIT</th>
         <th rowspan="2">TOTAL<br>LOSS</th>
         <th rowspan="2">TOTAL<br>SESI</th>
         <th rowspan="2">WINRATE</th>
       </tr>
       <tr>
+        <?php for ($i = 1; $i <= 6; $i++): ?>
         <th>✅</th><th>❌</th>
-        <th>✅</th><th>❌</th>
-        <th>✅</th><th>❌</th>
-        <th>✅</th><th>❌</th>
-        <th>✅</th><th>❌</th>
+        <?php endfor; ?>
       </tr>
     </thead>
     <tbody>
       <?php 
-      $day_order = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'];
       foreach ($day_order as $h): 
         $v = $hari_stats[$h];
         $t = $v['profit'] + $v['lose'];
         $wr_h = $t > 0 ? ($v['profit']/$t)*100 : 0;
         $is_best = (strtolower($h) == strtolower($best_day_profit));
-        
-        $s1_p = $v['s1_p'] ?? 0;
-        $s1_l = $v['s1_l'] ?? 0;
-        $s2_p = $v['s2_p'] ?? 0;
-        $s2_l = $v['s2_l'] ?? 0;
-        $s3_p = $v['s3_p'] ?? 0;
-        $s3_l = $v['s3_l'] ?? 0;
-        $s4_p = $v['s4_p'] ?? 0;
-        $s4_l = $v['s4_l'] ?? 0;
-        $s5_p = $v['s5_p'] ?? 0;
-        $s5_l = $v['s5_l'] ?? 0;
       ?>
         <tr class="<?= $is_best ? 'best-row' : '' ?>">
           <td><strong><?= mb_strtoupper($h, 'UTF-8') ?></strong> <?= $is_best ? '🏆' : '' ?></td>
-          <td class="profit-text"><?= $s1_p ?></td>
-          <td class="loss-text"><?= $s1_l ?></td>
-          <td class="profit-text"><?= $s2_p ?></td>
-          <td class="loss-text"><?= $s2_l ?></td>
-          <td class="profit-text"><?= $s3_p ?></td>
-          <td class="loss-text"><?= $s3_l ?></td>
-          <td class="profit-text"><?= $s4_p ?></td>
-          <td class="loss-text"><?= $s4_l ?></td>
-          <td class="profit-text"><?= $s5_p ?></td>
-          <td class="loss-text"><?= $s5_l ?></td>
+          <?php for ($i = 1; $i <= 6; $i++): ?>
+          <td class="profit-text"><?= $v["s{$i}_p"] ?? 0 ?></td>
+          <td class="loss-text"><?= $v["s{$i}_l"] ?? 0 ?></td>
+          <?php endfor; ?>
           <td class="profit-text"><?= $v['profit'] ?></td>
           <td class="loss-text"><?= $v['lose'] ?></td>
           <td class="neutral-text"><?= $t ?></td>
@@ -1553,24 +1477,12 @@ $day_icons = [
 <!-- MOBILE CARDS -->
 <div class="mobile-cards">
   <?php 
-  $day_order = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'];
   foreach ($day_order as $h): 
     $v = $hari_stats[$h];
     $t = $v['profit'] + $v['lose'];
     $wr_h = $t > 0 ? ($v['profit']/$t)*100 : 0;
     $icon = isset($day_icons[strtolower($h)]) ? $day_icons[strtolower($h)] : '📅';
     $is_best = (strtolower($h) == strtolower($best_day_profit));
-    
-    $s1_p = $v['s1_p'] ?? 0;
-    $s1_l = $v['s1_l'] ?? 0;
-    $s2_p = $v['s2_p'] ?? 0;
-    $s2_l = $v['s2_l'] ?? 0;
-    $s3_p = $v['s3_p'] ?? 0;
-    $s3_l = $v['s3_l'] ?? 0;
-    $s4_p = $v['s4_p'] ?? 0;
-    $s4_l = $v['s4_l'] ?? 0;
-    $s5_p = $v['s5_p'] ?? 0;
-    $s5_l = $v['s5_l'] ?? 0;
   ?>
   <div class="day-card <?= $is_best ? 'best-day-card' : '' ?>">
     <div class="day-card-header">
@@ -1580,41 +1492,18 @@ $day_icons = [
     </div>
 
     <div class="day-session-grid">
+      <?php for ($i = 1; $i <= 6; $i++): 
+        $p = $v["s{$i}_p"] ?? 0;
+        $l = $v["s{$i}_l"] ?? 0;
+      ?>
       <div class="day-session-item">
-        <div class="day-session-label">SESI 1</div>
+        <div class="day-session-label">SESI <?= $i ?></div>
         <div class="day-session-value">
-          <span class="profit-text">✅<?= $s1_p ?></span>
-          <span class="loss-text">❌<?= $s1_l ?></span>
+          <span class="profit-text">✅<?= $p ?></span>
+          <span class="loss-text">❌<?= $l ?></span>
         </div>
       </div>
-      <div class="day-session-item">
-        <div class="day-session-label">SESI 2</div>
-        <div class="day-session-value">
-          <span class="profit-text">✅<?= $s2_p ?></span>
-          <span class="loss-text">❌<?= $s2_l ?></span>
-        </div>
-      </div>
-      <div class="day-session-item">
-        <div class="day-session-label">SESI 3</div>
-        <div class="day-session-value">
-          <span class="profit-text">✅<?= $s3_p ?></span>
-          <span class="loss-text">❌<?= $s3_l ?></span>
-        </div>
-      </div>
-      <div class="day-session-item">
-        <div class="day-session-label">SESI 4</div>
-        <div class="day-session-value">
-          <span class="profit-text">✅<?= $s4_p ?></span>
-          <span class="loss-text">❌<?= $s4_l ?></span>
-        </div>
-      </div>
-      <div class="day-session-item">
-        <div class="day-session-label">SESI 5</div>
-        <div class="day-session-value">
-          <span class="profit-text">✅<?= $s5_p ?></span>
-          <span class="loss-text">❌<?= $s5_l ?></span>
-        </div>
-      </div>
+      <?php endfor; ?>
     </div>
 
     <div class="day-stats-grid">

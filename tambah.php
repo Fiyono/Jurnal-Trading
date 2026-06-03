@@ -868,6 +868,19 @@ require_once 'koneksi.php';
         </select>
       </div>
 
+       <!-- Session 6 -->
+       <div class="form-group">
+        <label>
+          <i class="fas fa-chart-line"></i>
+          SESSION 6 (REVERSAL)
+        </label>
+        <select name="session6" required>
+          <option value="skip" selected>⏸️ SKIP (Default)</option>
+          <option value="profit">📈 PROFIT</option>
+          <option value="lose">📉 LOSS</option>
+        </select>
+      </div>
+
       <!-- MULTI FOTO UPLOAD AREA -->
       <div class="form-group">
         <label>
@@ -968,6 +981,10 @@ function showSessionInfo() {
                 <div style="margin-bottom: 5px; padding: 10px; background: rgba(99,102,241,0.1); border-radius: 12px;">
                     <strong style="color: #8b5cf6;">🟣 SESSION 5 (100-50%)</strong>
                     <p style="margin: 5px 0 0 0; font-size: 0.9rem;">Entry saat candle sudah melewati target profit 150%</p>
+                </div>
+                <div style="margin-bottom: 5px; padding: 10px; background: rgba(99,102,241,0.1); border-radius: 12px;">
+                    <strong style="color:rgb(0, 120, 215);">🔵 SESSION 6 (REVERSAL) </strong>
+                    <p style="margin: 5px 0 0 0; font-size: 0.9rem;">Reversal dari sesi 1 khusus hari jumat.</p>
                 </div>
             </div>
         `,
